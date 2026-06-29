@@ -1,0 +1,12 @@
+http:
+  routers:
+
+    traefik:
+      rule: Host(`traefik.nextchat.vn`)
+      entryPoints:
+        - websecure
+
+      service: api@internal
+
+      tls:
+        certResolver: cloudflare

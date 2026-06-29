@@ -4,7 +4,6 @@ global:
 
 api:
   dashboard: true
-  insecure: true
 
 ping: {}
 
@@ -25,10 +24,10 @@ providers:
     watch: true
 
 certificatesResolvers:
-  letsencrypt:
+  cloudflare:
     acme:
-      email: "${ACME_EMAIL}"
+      email: admin@nextchat.vn
       storage: /letsencrypt/acme.json
 
-      httpChallenge:
-        entryPoint: web
+      dnsChallenge:
+        provider: cloudflare
