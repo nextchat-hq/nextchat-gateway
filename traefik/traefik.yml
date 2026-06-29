@@ -27,7 +27,7 @@ providers:
 certificatesResolvers:
   cloudflare:
     acme:
-      email: admin@nextchat.vn
+      email: kifu.dev@gmail.com
       storage: /letsencrypt/acme.json
 
       dnsChallenge:

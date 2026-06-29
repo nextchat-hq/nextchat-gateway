@@ -1,0 +1,13 @@
+[Unit]
+Description=Cloudflare DDNS Updater
+After=network-online.target
+
+[Service]
+Type=oneshot
+
+WorkingDirectory=/home/kifu/nextchat-gateway
+
+ExecStart=/home/kifu/nextchat-gateway/scripts/cloudflare-ddns.sh
+
+User=kifu
+Group=kifu
