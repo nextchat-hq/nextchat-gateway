@@ -1,7 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.5
-
+    image: traefik:v3.7.5
     container_name: traefik
 
     restart: unless-stopped
@@ -10,8 +9,8 @@ services:
       - .env
 
     environment:
-      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
       TZ: ${TZ}
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
 
     ports:
       - "${TRAEFIK_HTTP_PORT}:80"
@@ -19,14 +18,19 @@ services:
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
-
       - /home/kifu/data/traefik/letsencrypt:/letsencrypt
 
     healthcheck:
-      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8080/ping"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--spider",
+          "--quiet",
+          "http://localhost/ping"
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
