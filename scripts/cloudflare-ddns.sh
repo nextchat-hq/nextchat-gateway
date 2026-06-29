@@ -12,29 +12,33 @@ CONFIG_FILE="${ROOT_DIR}/scripts/records.conf"
     exit 1
 }
 
+[[ -f "$CONFIG_FILE" ]] || {
+    echo "records.conf not found"
+    exit 1
+}
+
 source "$ENV_FILE"
 
 CURRENT_IP="$(curl -4 -fsSL "$WAN_IP_PROVIDER" | tr -d '\n')"
 
 echo
 echo "=========================================="
-echo "Cloudflare DDNS"
-echo "Current IP : ${CURRENT_IP}"
+echo " Cloudflare DDNS"
 echo "=========================================="
+echo "Current IP : ${CURRENT_IP}"
+echo
 
 MAIL_BODY=""
 
 get_zone_id() {
 
     case "$1" in
-        nextchat)
+        nextchat.vn)
             echo "$CF_ZONE_NEXTCHAT"
             ;;
-
-        kifu)
+        kifu.id.vn)
             echo "$CF_ZONE_KIFU"
             ;;
-
         *)
             echo ""
             ;;
@@ -76,20 +80,18 @@ update_record() {
 
 }
 
-while IFS=',' read -r ZONE HOST PROXIED || [[ -n "$ZONE" ]]
+while read -r ZONE HOST PROXIED
 do
 
-    [[ -z "${ZONE// }" ]] && continue
+    [[ -z "${ZONE:-}" ]] && continue
 
-    [[ "$ZONE" =~ ^# ]] && continue
-
-    echo
-    echo "Checking ${HOST}"
+    echo "------------------------------------------"
+    echo "Checking : ${HOST}"
 
     ZONE_ID="$(get_zone_id "$ZONE")"
 
     if [[ -z "$ZONE_ID" ]]; then
-        echo "Unknown zone: ${ZONE}"
+        echo "ERROR: Unknown zone '${ZONE}'"
         continue
     fi
 
@@ -99,16 +101,19 @@ do
 
     if [[ "$SUCCESS" != "true" ]]; then
         echo "Cloudflare API error"
+        jq '.errors' <<< "$RESPONSE"
         continue
     fi
 
     RECORD_ID="$(jq -r '.result[0].id' <<< "$RESPONSE")"
-    OLD_IP="$(jq -r '.result[0].content' <<< "$RESPONSE")"
 
     if [[ "$RECORD_ID" == "null" ]]; then
-        echo "Record not found."
+        echo "ERROR: DNS record does not exist."
+        echo "Please create '${HOST}' in Cloudflare first."
         continue
     fi
+
+    OLD_IP="$(jq -r '.result[0].content' <<< "$RESPONSE")"
 
     if [[ "$OLD_IP" == "$CURRENT_IP" ]]; then
         echo "No change."
@@ -121,26 +126,32 @@ do
 
     if [[ "$UPDATE_SUCCESS" == "true" ]]; then
 
-        echo "Updated."
+        echo "Updated:"
+        echo "    ${OLD_IP}"
+        echo " -> ${CURRENT_IP}"
 
         MAIL_BODY+=$'\n'
         MAIL_BODY+="${HOST}"
         MAIL_BODY+=$'\n'
-        MAIL_BODY+="    ${OLD_IP} → ${CURRENT_IP}"
+        MAIL_BODY+="    ${OLD_IP} -> ${CURRENT_IP}"
         MAIL_BODY+=$'\n'
 
     else
 
-        echo "Update failed."
+        echo "Update failed"
 
         jq '.errors' <<< "$UPDATE"
 
     fi
 
 done < <(
+
     grep -v '^[[:space:]]*#' "$CONFIG_FILE" |
     grep -v '^[[:space:]]*$'
+
 )
+
+echo "------------------------------------------"
 
 if [[ -n "$MAIL_BODY" ]]; then
 
@@ -160,5 +171,5 @@ EOF
 fi
 
 echo
-echo "Done."
+echo "Finished."
 echo
