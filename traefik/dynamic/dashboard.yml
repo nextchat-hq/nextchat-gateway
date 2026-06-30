@@ -2,7 +2,7 @@ http:
   routers:
 
     traefik:
-      rule: Host(`traefik.nextchat.vn`)
+      rule: Host(`traefik.nextchat.vn`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
       entryPoints:
         - websecure
 
