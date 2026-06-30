@@ -1,12 +1,14 @@
+# Dynamic Configuration
 http:
   routers:
-
-    traefik:
+    dashboard:
       rule: Host(`traefik.nextchat.vn`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
-      entryPoints:
-        - websecure
-
       service: api@internal
-
-      tls:
-        certResolver: cloudflare
+      middlewares:
+        - auth
+  middlewares:
+    auth:
+      basicAuth:
+        users:
+          - "kifu:$apr1$F7SYJUdy$JcCJFIyTzo5gjdx1MI3290"
+          - "nextchat:$apr1$cfGsyPgD$zTH6j9zElHQ8QQ95thqQT1"
