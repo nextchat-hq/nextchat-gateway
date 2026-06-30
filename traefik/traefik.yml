@@ -3,7 +3,7 @@ global:
   sendAnonymousUsage: false
 
 api:
-  dashboard: false
+  dashboard: true
 
 ping: {}
 
