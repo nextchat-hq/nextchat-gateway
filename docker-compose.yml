@@ -22,6 +22,9 @@ services:
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
       - /home/kifu/data/traefik/letsencrypt:/letsencrypt
 
+    networks:
+      - gateway
+
   cloudflared:
     image: cloudflare/cloudflared:2026.6.1
     container_name: cloudflared
@@ -37,3 +40,7 @@ services:
 
     networks:
       - gateway
+
+networks:
+  gateway:
+    name: gateway
