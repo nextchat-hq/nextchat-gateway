@@ -21,3 +21,19 @@ services:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
       - /home/kifu/data/traefik/letsencrypt:/letsencrypt
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.6.1
+    container_name: cloudflared
+
+    restart: unless-stopped
+
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - ${CF_TUNNEL_TOKEN}
+
+    networks:
+      - gateway
