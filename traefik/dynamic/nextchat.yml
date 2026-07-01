@@ -1,0 +1,163 @@
+http:
+
+  # ============================================================
+  # SERVICES — trỏ trực tiếp đến từng container trên nextchat-core
+  # ============================================================
+  services:
+
+    # nginx: chỉ serve static files
+    nginx-static:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.120:8080"
+        passHostHeader: true
+
+    # nextchat-web app
+    nextchat-web:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.120:8081"
+        passHostHeader: true
+
+    # nextchat-admin panel
+    nextchat-admin:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.120:8082"
+        passHostHeader: true
+
+    # synapse Matrix homeserver
+    synapse:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.120:8008"
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: "100ms"
+
+    # sygnal push notification
+    sygnal:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.120:5000"
+        passHostHeader: true
+
+    # grafana monitor
+    grafana:
+      loadBalancer:
+        servers:
+          - url: "http://172.31.36.233:3000"
+        passHostHeader: true
+
+  # ============================================================
+  # MIDDLEWARES
+  # ============================================================
+  middlewares:
+
+    # Security headers
+    secure-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+
+    # Forward proto header
+    forward-https:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+
+  # ============================================================
+  # ROUTERS
+  # ============================================================
+  routers:
+
+    # ------ nextchat.vn & www.nextchat.vn ------
+
+    # Static files: .well-known, robots.txt, sitemap.xml, legal, images, css
+    nextchat-static:
+      rule: >-
+        (Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) &&
+        (
+          PathPrefix(`/.well-known`) ||
+          Path(`/robots.txt`) ||
+          Path(`/sitemap.xml`) ||
+          Path(`/view-transitions.css`) ||
+          PathPrefix(`/img`) ||
+          PathRegexp(`^/(privacy|legal|acceptable-use-policy|copyright|help|cookie-policy)$`) ||
+          PathRegexp(`^/vi/(privacy|legal|acceptable-use-policy|copyright|help|cookie-policy)$`)
+        )
+      priority: 30
+      entryPoints:
+        - websecure
+      service: nginx-static
+      middlewares:
+        - secure-headers
+        - gzip@file
+      tls: {}
+
+    # Push notification — priority cao hơn /_matrix để không bị matrix router bắt
+    nextchat-push:
+      rule: >-
+        (Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) &&
+        Path(`/_matrix/push/v1/notify`)
+      priority: 20
+      entryPoints:
+        - websecure
+      service: sygnal
+      middlewares:
+        - forward-https
+      tls: {}
+
+    # Matrix Client API & Synapse admin
+    nextchat-matrix:
+      rule: >-
+        (Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) &&
+        (PathPrefix(`/_matrix`) || PathPrefix(`/_synapse`))
+      priority: 10
+      entryPoints:
+        - websecure
+      service: synapse
+      middlewares:
+        - forward-https
+      tls: {}
+
+    # Web app — catch-all
+    nextchat-web:
+      rule: Host(`nextchat.vn`) || Host(`www.nextchat.vn`)
+      priority: 1
+      entryPoints:
+        - websecure
+      service: nextchat-web
+      middlewares:
+        - secure-headers
+        - gzip@file
+        - forward-https
+      tls: {}
+
+    # ------ admin.nextchat.vn ------
+    nextchat-admin:
+      rule: Host(`admin.nextchat.vn`)
+      entryPoints:
+        - websecure
+      service: nextchat-admin
+      middlewares:
+        - secure-headers
+        - gzip@file
+        - forward-https
+      tls: {}
+
+    # ------ monitor.nextchat.vn ------
+    nextchat-monitor:
+      rule: Host(`monitor.nextchat.vn`)
+      entryPoints:
+        - websecure
+      service: grafana
+      middlewares:
+        - secure-headers
+        - forward-https
+      tls: {}

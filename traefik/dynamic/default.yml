@@ -9,3 +9,10 @@ http:
 
     gzip:
       compress: {}
+
+    # Redirect www → non-www (tuỳ chọn, bỏ comment nếu muốn)
+    # www-redirect:
+    #   redirectRegex:
+    #     regex: "^https://www\\.nextchat\\.vn(.*)"
+    #     replacement: "https://nextchat.vn${1}"
+    #     permanent: true
