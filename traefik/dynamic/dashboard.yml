@@ -4,6 +4,7 @@ http:
     dashboard:
       rule: "Host(`traefik.nextchat.vn`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
       entryPoints:
+        - web
         - websecure
       service: api@internal
       middlewares:

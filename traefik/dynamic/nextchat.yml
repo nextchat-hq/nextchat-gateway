@@ -83,67 +83,67 @@ http:
       rule: "(Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) && (PathPrefix(`/.well-known`) || Path(`/robots.txt`) || Path(`/sitemap.xml`) || Path(`/view-transitions.css`) || PathPrefix(`/img`) || PathRegexp(`^/(privacy|legal|acceptable-use-policy|copyright|help|cookie-policy)$`) || PathRegexp(`^/vi/(privacy|legal|acceptable-use-policy|copyright|help|cookie-policy)$`))"
       priority: 30
       entryPoints:
+        - web
         - websecure
       service: nginx-static
       middlewares:
         - secure-headers
         - gzip@file
-      tls: {}
 
     # Push notification — priority cao hơn /_matrix để không bị matrix router bắt
     nextchat-push:
       rule: "(Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) && Path(`/_matrix/push/v1/notify`)"
       priority: 20
       entryPoints:
+        - web
         - websecure
       service: sygnal
       middlewares:
         - forward-https
-      tls: {}
 
     # Matrix Client API & Synapse admin
     nextchat-matrix:
       rule: "(Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) && (PathPrefix(`/_matrix`) || PathPrefix(`/_synapse`))"
       priority: 10
       entryPoints:
+        - web
         - websecure
       service: synapse
       middlewares:
         - forward-https
-      tls: {}
 
     # Web app — catch-all
     nextchat-web:
       rule: "Host(`nextchat.vn`) || Host(`www.nextchat.vn`)"
       priority: 1
       entryPoints:
+        - web
         - websecure
       service: nextchat-web
       middlewares:
         - secure-headers
         - gzip@file
         - forward-https
-      tls: {}
 
     # ------ admin.nextchat.vn ------
     nextchat-admin:
       rule: Host(`admin.nextchat.vn`)
       entryPoints:
+        - web
         - websecure
       service: nextchat-admin
       middlewares:
         - secure-headers
         - gzip@file
         - forward-https
-      tls: {}
 
     # ------ monitor.nextchat.vn ------
     nextchat-monitor:
       rule: Host(`monitor.nextchat.vn`)
       entryPoints:
+        - web
         - websecure
       service: grafana
       middlewares:
         - secure-headers
         - forward-https
-      tls: {}

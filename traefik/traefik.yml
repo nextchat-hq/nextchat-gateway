@@ -9,12 +9,8 @@ ping: {}
 entryPoints:
   web:
     address: ":80"
-    http:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
-          permanent: true
+    # Không redirect HTTP→HTTPS ở đây vì traffic đến qua Cloudflare Tunnel
+    # Cloudflare đã xử lý HTTPS, tunnel forward vào Traefik qua HTTP nội bộ
 
   websecure:
     address: ":443"
