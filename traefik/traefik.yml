@@ -2,7 +2,9 @@ global:
   checkNewVersion: false
   sendAnonymousUsage: false
 
-api: {}
+api:
+  dashboard: true
+  insecure: false
 
 ping: {}
 

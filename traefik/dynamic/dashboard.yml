@@ -6,7 +6,6 @@ http:
       service: api@internal
       middlewares:
         - auth
-      tls: {}
   middlewares:
     auth:
       basicAuth:
