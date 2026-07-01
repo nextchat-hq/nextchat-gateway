@@ -80,17 +80,7 @@ http:
 
     # Static files: .well-known, robots.txt, sitemap.xml, legal, images, css
     nextchat-static:
-      rule: >-
-        (Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) &&
-        (
-          PathPrefix(`/.well-known`) ||
-          Path(`/robots.txt`) ||
-          Path(`/sitemap.xml`) ||
-          Path(`/view-transitions.css`) ||
-          PathPrefix(`/img`) ||
-          PathRegexp(`^/(privacy|legal|acceptable-use-policy|copyright|help|cookie-policy)$`) ||
-          PathRegexp(`^/vi/(privacy|legal|acceptable-use-policy|copyright|help|cookie-policy)$`)
-        )
+      rule: "(Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) && (PathPrefix(`/.well-known`) || Path(`/robots.txt`) || Path(`/sitemap.xml`) || Path(`/view-transitions.css`) || PathPrefix(`/img`) || PathRegexp(`^/(privacy|legal|acceptable-use-policy|copyright|help|cookie-policy)$`) || PathRegexp(`^/vi/(privacy|legal|acceptable-use-policy|copyright|help|cookie-policy)$`))"
       priority: 30
       entryPoints:
         - websecure
@@ -102,9 +92,7 @@ http:
 
     # Push notification — priority cao hơn /_matrix để không bị matrix router bắt
     nextchat-push:
-      rule: >-
-        (Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) &&
-        Path(`/_matrix/push/v1/notify`)
+      rule: "(Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) && Path(`/_matrix/push/v1/notify`)"
       priority: 20
       entryPoints:
         - websecure
@@ -115,9 +103,7 @@ http:
 
     # Matrix Client API & Synapse admin
     nextchat-matrix:
-      rule: >-
-        (Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) &&
-        (PathPrefix(`/_matrix`) || PathPrefix(`/_synapse`))
+      rule: "(Host(`nextchat.vn`) || Host(`www.nextchat.vn`)) && (PathPrefix(`/_matrix`) || PathPrefix(`/_synapse`))"
       priority: 10
       entryPoints:
         - websecure
@@ -128,7 +114,7 @@ http:
 
     # Web app — catch-all
     nextchat-web:
-      rule: Host(`nextchat.vn`) || Host(`www.nextchat.vn`)
+      rule: "Host(`nextchat.vn`) || Host(`www.nextchat.vn`)"
       priority: 1
       entryPoints:
         - websecure
